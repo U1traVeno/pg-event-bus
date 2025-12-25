@@ -1,4 +1,4 @@
-# pg-event-bus
+# pgebus
 
 [**English**](README.md) | [简体中文](README.zh-CN.md)
 
@@ -18,9 +18,9 @@ Event Bus System Based on PostgreSQL - Lightweight and Reliable Event Processing
 
 TODO
 
-## What pg-event-bus IS NOT
+## What pgebus IS NOT
 
-pg-event-bus is not intended to replace: 
+pgebus is not intended to replace: 
 
 - RabbitMQ
 - Redis Streams
@@ -37,7 +37,7 @@ Specifically, it is not suitable for:
 
 If you need throughput, fan-out, or decoupled consumers, use a real message broker.
 
-## Why Use pg-event-bus
+## Why pge-bus
 
 You are likely a good fit if:
 
@@ -47,7 +47,7 @@ You are likely a good fit if:
 - Losing or duplicating an event would cause real cost
 - You already rely on PostgreSQL for correctness
 
-## Why Not Use pg-event-bus
+## Why Not Use pgebus
 
 You should probably not use this if:
 

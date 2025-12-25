@@ -1,7 +1,7 @@
 [project]
-name = "pg-event-bus"
+name = "pgebus"
 version = "0.1.0"
-description = "PostgreSQL-based event bus system - lightweight, high-performance, reliable event processing framework"
+description = "PostgreSQL-based event bus system"
 readme = "README.md"
 authors = [
     { name = "veno", email = "happ1less1917@gmail.com" }
@@ -21,7 +21,7 @@ dev = [
 ]
 
 [project.scripts]
-pg-event-bus = "pg_event_bus:main"
+pgebus = "pgebus:main"
 
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]

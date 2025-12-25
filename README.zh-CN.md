@@ -1,4 +1,4 @@
-# pg-event-bus
+# pgebus
 
 [English](README.md) | **简体中文**
 
@@ -18,9 +18,9 @@
 
 待补充
 
-## pg-event-bus 不是什么
+## pgebus 不是什么
 
-pg-event-bus 并不打算替代以下工具：
+pgebus 并不打算替代以下工具：
 
 - RabbitMQ
 - Redis Streams
@@ -37,9 +37,9 @@ pg-event-bus 并不打算替代以下工具：
 
 如果你需要高吞吐量、大规模发布/订阅或解耦的消费者，请使用专业的消息代理。
 
-## 为什么使用 pg-event-bus
+## 为什么使用 pgebus
 
-以下情况可能适合使用 pg-event-bus：
+以下情况可能适合使用 pgebus：
 
 - 你的应用主要是本地或单体架构
 - 你可以控制 PostgreSQL 实例
@@ -47,9 +47,9 @@ pg-event-bus 并不打算替代以下工具：
 - 丢失或重复事件会带来实际成本
 - 你已经依赖 PostgreSQL 来保证数据正确性
 
-## 为什么不使用 pg-event-bus
+## 为什么不使用 pgebus
 
-以下情况可能不适合使用 pg-event-bus：
+以下情况可能不适合使用 pgebus：
 
 - 你的系统是微服务架构
 - 你需要跨区域的水平扩展

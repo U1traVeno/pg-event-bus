@@ -1,5 +1,5 @@
 """
-pg-event-bus - 基于 PostgreSQL 的事件总线系统
+pgebus - 基于 PostgreSQL 的事件总线系统
 
 一个轻量级、高性能的事件系统，使用 PostgreSQL 作为唯一的事实来源。
 支持事件发布、订阅、延迟执行和并发处理。
@@ -47,5 +47,5 @@ __all__ = [
 
 
 def main() -> None:
-    print("pg-event-bus - PostgreSQL Event Bus System")
+    print("pgebus - PostgreSQL Event Bus System")
     print(f"Version: {__version__}")
