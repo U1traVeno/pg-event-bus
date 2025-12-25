@@ -5,9 +5,11 @@ Event 数据库模型 - 用于事件持久化
 注意: 这是一个独立的库，需要用户自行配置 SQLAlchemy Base 和数据库连接
 """
 
+from __future__ import annotations
+
 import enum
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from sqlalchemy import DateTime, String, Text, Enum, JSON, Index, Integer
 from sqlalchemy.orm import Mapped, mapped_column
@@ -90,18 +92,18 @@ class Event(Base):
     )
 
     # 处理信息
-    processed_at: Mapped[datetime] = mapped_column(
+    processed_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True, comment="事件处理完成时间"
     )
     retry_count: Mapped[int] = mapped_column(
         Integer, default=0, nullable=False, comment="重试次数"
     )
-    error_message: Mapped[str] = mapped_column(
+    error_message: Mapped[Optional[str]] = mapped_column(
         Text, nullable=True, comment="错误信息（如果处理失败）"
     )
 
     # 延迟执行
-    run_at: Mapped[datetime] = mapped_column(
+    run_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
         comment="事件执行时间（NULL 表示立即执行）",

@@ -1,5 +1,7 @@
 # pg-event-bus
 
+[**English**](README.md) | [简体中文](README.zh-CN.md)
+
 Event Bus System Based on PostgreSQL - Lightweight and Reliable Event Processing Framework
 
 ## Features
@@ -10,6 +12,7 @@ Event Bus System Based on PostgreSQL - Lightweight and Reliable Event Processing
 - ✅ **Delayed Execution** - Supports scheduled tasks and delayed event handling
 - ✅ **Automatic Retry** - Built-in retry mechanism for automatic handling of failures
 - ✅ **Hierarchical Event Dispatching** - Supports prefix matching and hierarchical dispatching of event types
+- ✅ **Fully Typed** - Ships with complete type annotations (PEP 561)
 
 ## Installation
 
