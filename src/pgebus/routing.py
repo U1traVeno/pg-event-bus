@@ -1,14 +1,20 @@
 """事件路由模块。"""
 
 from __future__ import annotations
-from typing import Callable, List, Tuple, Any, Awaitable
+from dataclasses import dataclass
+from typing import Awaitable, Callable, Dict, List, Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from .base import DBEvent
+from .base import DBEvent, EventContext
 
 # 定义 Endpoint 类型别名
-Endpoint = Callable[[AsyncSession, DBEvent], Awaitable[Any]]
+Endpoint = Callable[[EventContext, Dict[str, Any]], Awaitable[Any]]
+
+
+@dataclass(frozen=True)
+class HandlerSpec:
+    path: str
+    endpoint: Endpoint
+    transactional: bool = False
 
 
 class EventRouter:
@@ -24,29 +30,37 @@ class EventRouter:
             prefix: 路由前缀。
         """
         self.prefix = prefix
-        self.event_handlers: List[Tuple[str, Endpoint]] = []
+        self.event_handlers: List[HandlerSpec] = []
 
-    def add_event_route(self, path: str, endpoint: Endpoint) -> None:
+    def add_event_route(
+        self, path: str, endpoint: Endpoint, transactional: bool
+    ) -> None:
         """添加事件路由。
 
         Args:
             path: 事件路径（相对于当前 router 的 prefix）
             endpoint: 处理函数
+            transactional: 是否要求 dispatcher 管理的事务
         """
-        self.event_handlers.append((path, endpoint))
+        self.event_handlers.append(
+            HandlerSpec(path=path, endpoint=endpoint, transactional=transactional)
+        )
 
-    def on(self, path: str) -> Callable[[Endpoint], Endpoint]:
+    def on(
+        self, path: str, *, transactional: bool = False
+    ) -> Callable[[Endpoint], Endpoint]:
         """注册事件处理函数的装饰器。
 
         Args:
             path: 事件路径
+            transactional: 是否要求运行在 dispatcher 管理的事务中
 
         Returns:
             装饰器函数
         """
 
         def decorator(endpoint: Endpoint) -> Endpoint:
-            self.add_event_route(path, endpoint)
+            self.add_event_route(path, endpoint, transactional)
             return endpoint
 
         return decorator
@@ -61,33 +75,39 @@ class EventRouter:
             router: 要包含的 EventRouter 实例
             prefix: 包含时的额外前缀
         """
-        for path, endpoint in router.event_handlers:
+        for spec in router.event_handlers:
             parts: List[str] = []
             if prefix:
                 parts.append(prefix)
             if router.prefix:
                 parts.append(router.prefix)
-            if path:
-                parts.append(path)
+            if spec.path:
+                parts.append(spec.path)
 
             new_path = ".".join(parts)
-            self.add_event_route(new_path, endpoint)
+            self.add_event_route(new_path, spec.endpoint, spec.transactional)
 
-    async def handle(self, session: AsyncSession, event: DBEvent) -> bool:
-        """处理事件。
-
-        遍历注册的路由，找到匹配的事件类型并执行处理函数。
+    def get_handlers(self, event_name: str) -> List[HandlerSpec]:
+        """获取匹配事件名称的所有 handler（精确匹配）。
 
         Args:
-            session: 数据库会话
-            event: 事件对象
+            event_name: 事件名称（通常是 DBEvent["type"]）
 
         Returns:
-            bool: 是否找到并处理了事件
+            匹配的 handler 列表（按注册顺序）
         """
-        event_type = event["type"]
-        for path, endpoint in self.event_handlers:
-            if path == event_type:
-                await endpoint(session, event)
-                return True
-        return False
+        return [spec for spec in self.event_handlers if spec.path == event_name]
+
+    async def call_handlers(self, ctx: EventContext, event: DBEvent) -> bool:
+        """在给定上下文下调用匹配的 handlers。
+
+        注意：此方法不负责创建 session/事务；事务边界由 dispatcher 决定。
+        """
+        handlers = self.get_handlers(event["type"])
+        if not handlers:
+            return False
+
+        payload = event["payload"]
+        for spec in handlers:
+            await spec.endpoint(ctx, payload)
+        return True

@@ -9,7 +9,7 @@ __version__ = "0.1.0"
 
 # 导出核心组件
 from .models import Event, EventStatus
-from .base import DBEvent, publish_event
+from .base import DBEvent, EventContext, TransactionSession, publish_event
 from .repo import EventRepository
 from .queue import EventQueue
 from .listener import EventListener
@@ -31,6 +31,8 @@ __all__ = [
     "EventStatus",
     # 基础类
     "DBEvent",
+    "EventContext",
+    "TransactionSession",
     "publish_event",
     # 仓储
     "EventRepository",

@@ -6,7 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Generic, List, Optional, TypeVar
 
-from .base import DBEvent
+from .base import DBEvent, EventContext, TransactionSession
 
 if TYPE_CHECKING:
     from .queue import EventQueue
@@ -204,15 +204,31 @@ class EventWorker(BaseWorker[DBEvent]):
             f"Worker {self.worker_id} 开始处理事件: {task['type']} (ID: {event_id})"
         )
 
+        handlers = self.router.get_handlers(task["type"])
+        needs_tx = any(h.transactional for h in handlers)
+
         async with self.session_manager.session() as session:
             # 标记事件为处理中
             if event_id:
                 await self.event_repo.mark_processing(session, event_id)
                 await session.commit()
 
-            # 使用 router 处理事件
-            await self.router.handle(session, task)
+        # 调用 handlers（同事件执行全部 handler；事务由 dispatcher 决定）
+        if handlers:
+            if needs_tx:
+                async with self.session_manager.session() as session:
+                    async with session.begin():
+                        ctx = EventContext(session=TransactionSession(session))
+                        payload = task["payload"]
+                        for h in handlers:
+                            await h.endpoint(ctx, payload)
+            else:
+                ctx = EventContext(session=None)
+                payload = task["payload"]
+                for h in handlers:
+                    await h.endpoint(ctx, payload)
 
+        async with self.session_manager.session() as session:
             # 标记事件为已完成
             if event_id:
                 await self.event_repo.mark_completed(session, event_id)
